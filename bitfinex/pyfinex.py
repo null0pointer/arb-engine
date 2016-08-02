@@ -20,7 +20,7 @@ EVENT_SUBSCRIBED = "subscribed"
 
 BFX_WEBSOCKET_ADDRESS = "wss://api2.bitfinex.com:3000/ws"
 
-BOOK_SUBSCRIBE_STRING = "{\"event\":\"subscribe\",\"channel\":\"book\",\"pair\":\"BTCUSD\",\"prec\":\"P0\"}"
+BOOK_SUBSCRIBE_STRING = "{\"event\":\"subscribe\",\"channel\":\"book\",\"pair\":\"BTCUSD\",\"prec\":\"P0\",\"freq\":\"F0\"}"
 TICKER_SUBSCRIBE_STRING = "{\"event\":\"subscribe\",\"channel\":\"ticker\",\"pair\":\"BTCUSD\"}"
 TRADES_SUBSCRIBE_STRING = "{\"event\":\"subscribe\",\"channel\":\"trades\",\"pair\":\"BTCUSD\"}"
 
@@ -100,7 +100,7 @@ class BitfinexWebsocket:
         
     def __update_book(self, update_object):
         if (self.debug):
-            print(update_object)
+            print('__update_book: ' + str(update_object))
             
         if (hasattr(self, "book_callback")):
             price = update_object[0]
@@ -124,7 +124,7 @@ class BitfinexWebsocket:
     
     def __update_ticker(self, update_object):
         if (self.debug):
-            print(update_object)
+            print('__update_tocker: ' + str(update_object))
             
         if (hasattr(self, "ticker_callback")):
             bid = update_object[0]
@@ -165,7 +165,7 @@ class BitfinexWebsocket:
     
     def __update_trades(self, update_object):
         if (self.debug):
-            print(update_object)
+            print('__update_trades: ' + str(update_object))
             
         if (hasattr(self, "trades_callback")):
             sequence_id = update_object[0]
@@ -186,7 +186,7 @@ class BitfinexWebsocket:
                 
     def __update_private_wallet(self, update_object):
         if (self.debug):
-            print(update_object)
+            print('__update_private_wallet: ' + str(update_object))
             
         if (hasattr(self, "private_wallet_callback")):
             name = update_object[0]
@@ -197,7 +197,7 @@ class BitfinexWebsocket:
             
     def __update_private_position(self, update_object):
         if (self.debug):
-            print(update_object)
+            print('__update_private_position: ' + str(update_object))
             
         if (hasattr(self, "private_position_callback")):
             pair = update_object[0]
@@ -210,7 +210,7 @@ class BitfinexWebsocket:
             
     def __update_private_order(self, update_object):
         if (self.debug):
-            print(update_object)
+            print('__update_private_order: ' + str(update_object))
             
         if (hasattr(self, "private_order_callback")):
             order_id = update_object[0]
@@ -228,10 +228,10 @@ class BitfinexWebsocket:
             
     def __update_private_trade(self, update_object):
         if (self.debug):
-            print(update_object)
+            print('__update_private_trade: ' + str(update_object))
                 
     def __parse_private_message(self, message_object):
-        print(message_object)
+        print('__parse_private_message: ' + str(message_object))
         message_object.pop(0)
         message_type = message_object.pop(0)
         
@@ -263,6 +263,9 @@ class BitfinexWebsocket:
     def __on_message(self, ws, message):
         obj = json.loads(message);
         
+        if (self.debug):
+            print('__on_message: ' + str(message))
+        
         if (type(obj) is dict):
             if KEY_EVENT in obj.keys():
                 if (obj[KEY_EVENT] == EVENT_SUBSCRIBED):
@@ -287,6 +290,12 @@ class BitfinexWebsocket:
                         
         elif (type(obj) is list):
             if (len(obj) > 0):
+                
+                if (len(obj) == 2):
+                    if (obj[1] == 'hb'):
+                        print('heartbeat')
+                        return
+                
                 channel_id = obj[0]
                 if (hasattr(self, "book_channel_id")):
                     if (channel_id == self.book_channel_id):
@@ -302,7 +311,7 @@ class BitfinexWebsocket:
                         self.__parse_private_message(obj)
 
     def __on_error(self, ws, error):
-        print(error)
+        print('__on_error: ' + str(error))
 
     def __on_close(self, ws):
         print("### closed connection to " + BFX_WEBSOCKET_ADDRESS + " ###")

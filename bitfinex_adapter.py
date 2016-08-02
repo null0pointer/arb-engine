@@ -33,6 +33,9 @@ class BitfinexAdapter(ArbitrageExchangeAdapter):
         self.trigger_update()
     
     def book_update(self, price, count, amount, clear):
+        if (amount == 0):
+            print('heres one thats zero')
+            
         if not clear:
             bid_ask = "bid" if (amount > 0) else "ask"
             book_string = str(price) + " " + bid_ask + " for " + str(abs(amount)) + " BTC"
@@ -43,7 +46,7 @@ class BitfinexAdapter(ArbitrageExchangeAdapter):
             self.trigger_update()
             
     def __init__(self):    
-        bfx = bitfinex.BitfinexWebsocket()
-        bfx.subscribe_ticker(self.ticker_update)
-        # bfx.subscribe_book(self.book_update)
+        bfx = bitfinex.BitfinexWebsocket(debug=True)
+        # bfx.subscribe_ticker(self.ticker_update)
+        bfx.subscribe_book(self.book_update)
             
