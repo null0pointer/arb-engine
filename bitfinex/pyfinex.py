@@ -293,7 +293,8 @@ class BitfinexWebsocket:
                 
                 if (len(obj) == 2):
                     if (obj[1] == 'hb'):
-                        print('heartbeat')
+                        if (self.debug):
+                            print('heartbeat')
                         return
                 
                 channel_id = obj[0]
