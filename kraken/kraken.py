@@ -7,15 +7,25 @@ class Kraken:
     update_interval = 10
     
     def __init__(self):
-        self.krakenex = krakenex.API()
-        self.krakenex.set_connection(krakenex.Connection())
-        self.thread = threading.Thread(target = self.update_depth())
-        self.thread.daemon = True
-        self.thread.start()
+        self.btckrakenex = krakenex.API()
+        self.btckrakenex.set_connection(krakenex.Connection())
         
-    def request_depth(self, pair):
-        return self.krakenex.query_public('Depth', {'pair': pair, 'count': '1'})
+        self.ethkrakenex = krakenex.API()
+        self.ethkrakenex.set_connection(krakenex.Connection())
         
-    def update_depth(self):
+        self.btcthread = threading.Thread(target = self.update_depth(self.btckrakenex, 'XXBTZUSD'))
+        self.btcthread.daemon = True
+        self.btcthread.start()
+        
+        print('got here')
+        
+        self.eththread = threading.Thread(target = self.update_depth(self.ethkrakenex, 'XETHXXBT'))
+        self.eththread.daemon = True
+        self.eththread.start()
+        
+    def request_depth(self, api, pair):
+        return api.query_public('Depth', {'pair': pair, 'count': '1'})
+        
+    def update_depth(self, api, pair):
         while True:
-            print(self.request_depth('XXBTZUSD'))
+            print(self.request_depth(api, pair))
