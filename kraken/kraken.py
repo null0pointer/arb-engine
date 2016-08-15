@@ -1,31 +1,93 @@
 import krakenex
 import threading
+from time import sleep
+
+class RepeatingRequestThread(threading.Thread):
+    
+    def __init__(self, command, params, callback, interval=0, private=False, api_key='', api_secret=''):
+        self.command = command
+        self.params = params
+        self.callback = callback
+        self.interval = interval
+        self.private = private
+        
+        self.krakenex = krakenex.API(key=api_key, secret=api_secret)
+        self.krakenex.set_connection(krakenex.Connection())
+        
+        threading.Thread.__init__(self)
+        self.daemon = True
+        
+    def run(self):
+        while True:
+            response = None
+            if self.private:
+                response = self.krakenex.query_private(self.command, self.params)
+            else:
+                response = self.krakenex.query_public(self.command, self.params)
+            self.callback(response)
+            
+            sleep(self.interval)
 
 class Kraken:
     
     krakenex = None
-    update_interval = 10
     
     def __init__(self):
-        self.btckrakenex = krakenex.API()
-        self.btckrakenex.set_connection(krakenex.Connection())
+        # self.btckrakenex = krakenex.API()
+        # self.btckrakenex.set_connection(krakenex.Connection())
         
-        self.ethkrakenex = krakenex.API()
-        self.ethkrakenex.set_connection(krakenex.Connection())
+        # self.ethkrakenex = krakenex.API()
+        # self.ethkrakenex.set_connection(krakenex.Connection())
         
-        self.btcthread = threading.Thread(target = self.update_depth(self.btckrakenex, 'XXBTZUSD'))
-        self.btcthread.daemon = True
-        self.btcthread.start()
+        # self.btcthread = threading.Thread(target = self.update_ticker(self.btckrakenex, ['XXBTZUSD']))
+        # self.btcthread.start()
         
+        # print('got here')
+        #
+        # self.eththread = threading.Thread(target = self.update_depth(self.ethkrakenex, 'XETHXXBT'))
+        # self.eththread.start()
+        self.start_updating_depth()
         print('got here')
+        self.start_updating_ticker()
         
-        self.eththread = threading.Thread(target = self.update_depth(self.ethkrakenex, 'XETHXXBT'))
-        self.eththread.daemon = True
-        self.eththread.start()
+    def request_callback(self, response):
+        print(response)
+        
+    def start_updating_depth(self):
+        request = RepeatingRequestThread('Depth', {'pair': 'XETHXXBT', 'count': '1'}, self.request_callback)
+        request.run()
+        
+    def start_updating_ticker(self):
+        request = RepeatingRequestThread('Ticker', {'pair': ['XETHXXBT']}, self.request_callback)
+        request.run()
         
     def request_depth(self, api, pair):
         return api.query_public('Depth', {'pair': pair, 'count': '1'})
         
+    def request_ticker(self, api, pairs):
+        pairs_string = ','.join(pairs)
+        return api.query_public('Ticker', {'pair': pairs_string})
+        
+    def received_depth_update(self, pair, response):
+        result = response['result'][pair]
+        highest_bid = result['bids'][0][0]
+        lowest_ask = result['asks'][0][0]
+        print(str(pair) + ': bid = ' + str(highest_bid) + " ask = " + str(lowest_ask))
+        
+    def received_ticker_update(self, pairs, response):
+        result = response['result']
+        for pair in pairs:
+            pair_ticker = result[pair]
+            asks = pair_ticker['a']
+            bids = pair_ticker['b']
+            print(str(pair) + ': bids = ' + str(bids) + ' asks = ' + str(asks))
+        
     def update_depth(self, api, pair):
         while True:
-            print(self.request_depth(api, pair))
+            response = self.request_depth(api, pair)
+            self.received_depth_update(pair, response)
+            
+    def update_ticker(self, api, pairs):
+        while True:
+            response = self.request_ticker(api, pairs)
+            self.received_ticker_update(pairs, response)
