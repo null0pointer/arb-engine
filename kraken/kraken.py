@@ -44,6 +44,7 @@ class Kraken:
     
     def __init__(self):
         _thread.start_new_thread(repeating_public_request, ("Depth", {'pair': 'XETHXXBT', 'count': '1'}, self.request_callback))
+        _thread.start_new_thread(repeating_public_request, ("Depth", {'pair': 'XXBTZUSD', 'count': '1'}, self.request_callback))
         # self.start_updating_depth()
         # print('got here')
         # self.start_updating_ticker()
