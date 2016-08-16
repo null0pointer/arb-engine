@@ -1,54 +1,52 @@
 import krakenex
 import threading
+import _thread
 from time import sleep
 
-class RepeatingRequestThread(threading.Thread):
-    
-    def __init__(self, command, params, callback, interval=0, private=False, api_key='', api_secret=''):
-        self.command = command
-        self.params = params
-        self.callback = callback
-        self.interval = interval
-        self.private = private
-        
-        self.krakenex = krakenex.API(key=api_key, secret=api_secret)
-        self.krakenex.set_connection(krakenex.Connection())
-        
-        threading.Thread.__init__(self)
-        self.daemon = True
-        
-    def run(self):
-        while True:
-            response = None
-            if self.private:
-                response = self.krakenex.query_private(self.command, self.params)
-            else:
-                response = self.krakenex.query_public(self.command, self.params)
-            self.callback(response)
+# class RepeatingRequestThread(threading.Thread):
+#
+#     def __init__(self, command, params, callback, interval=0, private=False, api_key='', api_secret=''):
+#         self.command = command
+#         self.params = params
+#         self.callback = callback
+#         self.interval = interval
+#         self.private = private
+#
+#         self.krakenex = krakenex.API(key=api_key, secret=api_secret)
+#         self.krakenex.set_connection(krakenex.Connection())
+#
+#         threading.Thread.__init__(self)
+#         self.daemon = True
+#
+#     def run(self):
+#         while True:
+#             response = None
+#             if self.private:
+#                 response = self.krakenex.query_private(self.command, self.params)
+#             else:
+#                 response = self.krakenex.query_public(self.command, self.params)
+#             self.callback(response)
+#
+#             sleep(self.interval)
             
-            sleep(self.interval)
+def repeating_public_request(method, params, callback, interval=0):
+    kraken = krakenex.API()
+    kraken.set_connection(krakenex.Connection())
+    
+    while True:
+        response = kraken.query_public(method, params)
+        callback(response)
+        sleep(interval)
 
 class Kraken:
     
     krakenex = None
     
     def __init__(self):
-        # self.btckrakenex = krakenex.API()
-        # self.btckrakenex.set_connection(krakenex.Connection())
-        
-        # self.ethkrakenex = krakenex.API()
-        # self.ethkrakenex.set_connection(krakenex.Connection())
-        
-        # self.btcthread = threading.Thread(target = self.update_ticker(self.btckrakenex, ['XXBTZUSD']))
-        # self.btcthread.start()
-        
+        _thread.start_new_thread(repeating_public_request, ("Depth", {'pair': 'XETHXXBT', 'count': '1'}, self.request_callback))
+        # self.start_updating_depth()
         # print('got here')
-        #
-        # self.eththread = threading.Thread(target = self.update_depth(self.ethkrakenex, 'XETHXXBT'))
-        # self.eththread.start()
-        self.start_updating_depth()
-        print('got here')
-        self.start_updating_ticker()
+        # self.start_updating_ticker()
         
     def request_callback(self, response):
         print(response)
