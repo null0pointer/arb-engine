@@ -21,8 +21,7 @@ class Kraken:
     
     def __init__(self):
         _thread.start_new_thread(repeating_public_request, ('Depth', {'pair': 'XETHXXBT', 'count': '1'}, self.depth_response_handler, self.generic_error_handler))
-        _thread.start_new_thread(repeating_public_request, ("Depth", {'pair': 'XXBTZUSDasd', 'count': '1'}, self.ticker_response_handler, self.generic_error_handler))
-        # _thread.start_new_thread(repeating_public_request, ('Ticker', {'pair': 'XETHXXBT'}, self.ticker_request_callback))
+        _thread.start_new_thread(repeating_public_request, ("Ticker", {'pair': 'XXBTZUSD'}, self.ticker_response_handler, self.generic_error_handler))
 
     def depth_response_handler(self, response):
         for key in response:
@@ -32,7 +31,7 @@ class Kraken:
             print(str(key) + ': bid = ' + str(highest_bid) + " ask = " + str(lowest_ask))
         
     def ticker_response_handler(self, response):
-        print('Depth: ' + str(response))
+        print('Ticker: ' + str(response))
         
     def generic_error_handler(self, errors):
         print('Error: ' + str(errors))
