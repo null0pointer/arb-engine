@@ -14,9 +14,8 @@ class KrakenAdapter(ArbitrageExchangeAdapter):
     __order_book = []
             
     def __init__(self):    
-        kraken_api = kraken.Kraken()
-        # bfx.subscribe_ticker(self.ticker_update)
-        # bfx.subscribe_book(self.book_update)
+        self.kraken_api = kraken.Kraken()
+        self.kraken_api.subscribe_bid_ask_updates('XXBTZUSD', self.bid_ask_update)
 
     # ArbitrageExchangeAdapter functions
 
@@ -47,14 +46,17 @@ class KrakenAdapter(ArbitrageExchangeAdapter):
         self.__last_price = last_price
         self.trigger_update()
     
-    def book_update(self, price, count, amount, clear):
-        if not clear:
-            pass
-        else:
-            self.__order_book = []
-            self.__highest_bid = None
-            self.__lowest_ask = None
-            self.trigger_update()
+    # def book_update(self, price, count, amount, clear):
+    #     if not clear:
+    #         pass
+    #     else:
+    #         self.__order_book = []
+    #         self.__highest_bid = None
+    #         self.__lowest_ask = None
+    #         self.trigger_update()
+    
+    def bid_ask_update(self, pair, bid_price, bid_size, bid_time, ask_price, ask_size, ask_time):
+        print(str(pair) + ' bid: ' + str(bid_price) + ' (' + str(bid_size) + ') ask: ' + str(ask_price) + ' (' + str(ask_size) + ')')
             
     # private functions
     
