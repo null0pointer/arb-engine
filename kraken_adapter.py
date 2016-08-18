@@ -15,7 +15,10 @@ class KrakenAdapter(ArbitrageExchangeAdapter):
             
     def __init__(self):    
         self.kraken_api = kraken.Kraken()
-        self.kraken_api.subscribe_bid_ask_updates('XXBTZUSD', self.bid_ask_update)
+        # self.kraken_api.subscribe_bid_ask_updates('XXBTZUSD', self.bid_ask_update)
+        pairs = self.kraken_api.request_pairs()
+        for pair in pairs:
+            print(str(pair['pair']) + ' = ' + str(pair['quote']) + ' / ' + str(pair['base']))
 
     # ArbitrageExchangeAdapter functions
 

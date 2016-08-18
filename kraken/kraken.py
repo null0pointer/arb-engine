@@ -22,9 +22,25 @@ class Kraken:
     bid_ask_callbacks = dict()
     
     def __init__(self):
+        self.kraken = krakenex.API()
+        self.kraken.set_connection(krakenex.Connection())
         # _thread.start_new_thread(repeating_public_request, ('Depth', {'pair': 'XXBTZUSD', 'count': '1'}, self.depth_response_handler, self.generic_error_handler))
         # _thread.start_new_thread(repeating_public_request, ("Ticker", {'pair': 'XXBTZUSD'}, self.ticker_response_handler, self.generic_error_handler))
         pass
+        
+    def request_pairs(self):
+        response = self.kraken.query_public('AssetPairs')
+        errors = response['error']
+        if len(errors) == 0:
+            pairs = []
+            result = response['result']
+            for pair in result:
+                info = result[pair]
+                quote = info['quote']
+                base = info['base']
+                pairs.append({'pair': pair, 'quote': quote, 'base': base})
+            return pairs
+        return []
         
     def subscribe_bid_ask_updates(self, pair, callback):
         self.bid_ask_callbacks[pair] = callback
