@@ -12,13 +12,20 @@ class KrakenAdapter(ArbitrageExchangeAdapter):
     __lowest_ask = None
     
     __order_book = []
+    
+    pairs = dict()
             
     def __init__(self):    
         self.kraken_api = kraken.Kraken()
         # self.kraken_api.subscribe_bid_ask_updates('XXBTZUSD', self.bid_ask_update)
-        pairs = self.kraken_api.request_pairs()
-        for pair in pairs:
+        pairs_response = self.kraken_api.request_pairs()
+        for pair in pairs_response:
+            self.pairs[pair['pair']] = {'quote': pair['quote'], 'base': pair['base']}
             print(str(pair['pair']) + ' = ' + str(pair['quote']) + ' / ' + str(pair['base']))
+        
+        for pair in self.pairs:
+            if (pair[-2:] != '.d'):
+                self.kraken_api.subscribe_bid_ask_updates(pair, self.bid_ask_update)
 
     # ArbitrageExchangeAdapter functions
 
