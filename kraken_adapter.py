@@ -13,7 +13,9 @@ class KrakenAdapter(ArbitrageExchangeAdapter):
     
     __order_book = []
     
+    assets = set()
     pairs = dict()
+    prices = dict()
             
     def __init__(self):    
         self.kraken_api = kraken.Kraken()
@@ -21,7 +23,12 @@ class KrakenAdapter(ArbitrageExchangeAdapter):
         pairs_response = self.kraken_api.request_pairs()
         for pair in pairs_response:
             self.pairs[pair['pair']] = {'quote': pair['quote'], 'base': pair['base']}
+            self.assets.add(pair['quote'])
+            self.assets.add(pair['base'])
             print(str(pair['pair']) + ' = ' + str(pair['quote']) + ' / ' + str(pair['base']))
+            
+        self.initialise_prices()
+        print('assets = ' + str(self.assets))
         
         for pair in self.pairs:
             if (pair[-2:] != '.d'):
@@ -66,7 +73,37 @@ class KrakenAdapter(ArbitrageExchangeAdapter):
     #         self.trigger_update()
     
     def bid_ask_update(self, pair, bid_price, bid_size, bid_time, ask_price, ask_size, ask_time):
-        print(str(pair) + ' bid: ' + str(bid_price) + ' (' + str(bid_size) + ') ask: ' + str(ask_price) + ' (' + str(ask_size) + ')')
+        # print(str(pair) + ' bid: ' + str(bid_price) + ' (' + str(bid_size) + ') ask: ' + str(ask_price) + ' (' + str(ask_size) + ')')
+        quote = self.pairs[pair]['quote']
+        base = self.pairs[pair]['base']
+        self.prices[quote][base] = str(ask_price)
+        self.prices[base][quote] = str(1/float(bid_price))
+        self.print_prices()
+    
+    def print_prices(self):
+        sorted_assets = list(self.assets)
+        sorted_assets.sort()
+        row_string = '\t'
+        for asset in sorted_assets:
+            row_string = row_string + asset + '\t'
+        print(row_string)
+        
+        for base in sorted_assets:
+            row_string = base + '\t'
+            for quote in sorted_assets:
+                price = str(self.prices[base][quote])
+                row_string = row_string + price[:min(7, len(price))] + '\t'
+            print(row_string)
+            
+        print('\n\n')
+        
+    def initialise_prices(self):
+        for base in self.assets:
+            if base not in self.prices:
+                self.prices[base] = dict()
+            for quote in self.assets:
+                if quote not in self.prices[base]:
+                    self.prices[base][quote] = '-'
             
     # private functions
     
