@@ -4,7 +4,7 @@ import time
 from kraken_adapter import KrakenAdapter
 
 def exchange_update(exchange_adapter):
-    print(exchange_adapter.last_price())
+    print('updated')
 
 if __name__ == "__main__":
     ka = KrakenAdapter()

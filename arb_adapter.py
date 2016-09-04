@@ -5,23 +5,23 @@ class ArbitrageExchangeAdapter(metaclass=ABCMeta):
     @abstractmethod
     def receive_updates(self, callback):
         pass
+        
+    @abstractmethod
+    def available_pairs(self):
+        pass
     
     @abstractmethod
-    def last_price(self):
-        pass
-    
-    @abstractmethod
-    def highest_bid(self):
+    def highest_bid(self, pair):
         pass
         
     @abstractmethod
-    def lowest_ask(self):
+    def lowest_ask(self, pair):
         pass
         
     @abstractmethod
-    def place_bid(self, price, size):
+    def place_market_bid(self, pair, size):
         pass
         
     @abstractmethod
-    def place_ask(self, price, size):
+    def place_market_ask(self, pair, size):
         pass
