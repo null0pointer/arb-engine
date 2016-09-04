@@ -10,10 +10,12 @@ class ArbitrageExchangeAdapter(metaclass=ABCMeta):
     def available_pairs(self):
         pass
     
+    # returns (<price>, <size>)
     @abstractmethod
     def highest_bid(self, pair):
         pass
         
+    # returns (<price>, <size>)
     @abstractmethod
     def lowest_ask(self, pair):
         pass
