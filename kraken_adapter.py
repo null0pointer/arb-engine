@@ -33,7 +33,8 @@ class KrakenAdapter(ArbitrageExchangeAdapter):
         
         for pair in self.pairs:
             if (pair[-2:] != '.d'):
-                self.kraken_api.subscribe_bid_ask_updates(pair, self.bid_ask_update)
+                if (pair == 'XXBTZUSD'):
+                    self.kraken_api.subscribe_bid_ask_updates(pair, self.bid_ask_update)
 
     # ArbitrageExchangeAdapter functions
 
