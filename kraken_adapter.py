@@ -10,6 +10,7 @@ class KrakenAdapter(ArbitrageExchangeAdapter):
     __order_book = []
     
     assets = set()
+    raw_pairs = set()
     pairs = dict()
     
     # highest_bids[<pair>] = (price, size, time)
@@ -17,11 +18,12 @@ class KrakenAdapter(ArbitrageExchangeAdapter):
     # lowest_asks[<pair>] = (price, size, time)
     lowest_asks = dict()
             
-    def __init__(self):    
+    def __init__(self, tracking_pair):    
         self.kraken_api = kraken.Kraken()
         # self.kraken_api.subscribe_bid_ask_updates('XXBTZUSD', self.bid_ask_update)
         pairs_response = self.kraken_api.request_pairs()
         for pair in pairs_response:
+            self.raw_pairs.add(pair['pair'])
             self.pairs[pair['pair']] = {'quote': pair['quote'], 'base': pair['base']}
             self.assets.add(pair['quote'])
             self.assets.add(pair['base'])
@@ -31,10 +33,8 @@ class KrakenAdapter(ArbitrageExchangeAdapter):
             
         print('assets = ' + str(self.assets))
         
-        for pair in self.pairs:
-            if (pair[-2:] != '.d'):
-                if (pair == 'XXBTZUSD'):
-                    self.kraken_api.subscribe_bid_ask_updates(pair, self.bid_ask_update)
+        if tracking_pair in self.raw_pairs:
+            self.kraken_api.subscribe_bid_ask_updates(tracking_pair, self.bid_ask_update)
 
     # ArbitrageExchangeAdapter functions
 
