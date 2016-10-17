@@ -31,7 +31,7 @@ class PoloniexAPIWrapper:
             return json.loads(ret.read().decode('utf-8'))
         elif(command == "returnOrderBook"):
             ret = urllib.request.urlopen('https://poloniex.com/public?command=' + command + '&currencyPair=' + str(req['currencyPair']))
-            return json.loads(ret.read().decode('utf-8').decode('utf-8'))
+            return json.loads(ret.read().decode('utf-8'))
         elif(command == "returnMarketTradeHistory"):
             ret = urllib.request.urlopen('https://poloniex.com/public?command=' + "returnTradeHistory" + '&currencyPair=' + str(req['currencyPair']))
             return json.loads(ret.read().decode('utf-8'))
