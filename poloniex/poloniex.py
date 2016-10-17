@@ -1,22 +1,30 @@
 from autobahn.asyncio.wamp import ApplicationSession
 from autobahn.asyncio.wamp import ApplicationRunner
+from asyncio import coroutine
+from time import sleep
+import threading
+
+def start_poloniex_runner(delegate):
+    runner = ApplicationRunner("wss://api.poloniex.com:443", "realm1", extra={'poloniex': delegate})
+    runner.run(PoloniexComponent)
 
 class Poloniex:
     
     def __init__(self):
         self.bids = []
         self.asks = []
-        self.runner = ApplicationRunner("wss://api.poloniex.com:443", "realm1", extra={'poloniex': self})
         
     def start(self):
-        poloniex_instance = self
-        self.runner.run(PoloniexComponent)
+        thr = threading.Thread(target=start_poloniex_runner, args=(self,), kwargs={})
+        thr.start()
+        # _thread.start_new_thread(self.runner.run, (PoloniexComponent,))
+        # self.runner.run(PoloniexComponent)
         
     def onTicker(self, currencyPair, last, lowestAsk, highestBid, percentChange, baseVolume, quoteVolume, isFrozen, high, low):
         # print(currencyPair, last)
         pass
         
-    def onMarketUpdate(self, *args, seq=None):
+    def onMarketUpdate(self, *args, seq=0):
         for update in args:
             update_type = update['type']
             if update_type == 'orderBookModify':
@@ -104,10 +112,11 @@ class PoloniexComponent(ApplicationSession):
         self.poloniex = self.config.extra['poloniex']
         self.join(self.config.realm)
 
+    @coroutine
     def onJoin(self, details):
         try:
-            self.subscribe(self.poloniex.onTicker, 'ticker')
-            self.subscribe(self.poloniex.onMarketUpdate, 'BTC_XMR')
+            yield from self.subscribe(self.poloniex.onTicker, 'ticker')
+            yield from self.subscribe(self.poloniex.onMarketUpdate, 'BTC_XMR')
         except Exception as e:
             print("Could not subscribe to topic:", e)
 
@@ -115,6 +124,10 @@ class PoloniexComponent(ApplicationSession):
 def main():
     polo = Poloniex()
     polo.start()
+    
+    while True:
+        print('lol')
+        sleep(1)
 
 if __name__ == "__main__":
     main()
